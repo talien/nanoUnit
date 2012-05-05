@@ -52,7 +52,7 @@ template<class A> void test_equal_impl(A actual, A expected, int mode, const cha
                 ss << "Assertion failed, in " << func << " " << filename << ":" << line;
                 throw ss.str();
             }
-            std::cout << "Assertion passed, in " << func << " " << filename << ":" << line;
+            std::cout << "Assertion passed, in " << func << " " << filename << ":" << line << std::endl;
             break;
     }
 
