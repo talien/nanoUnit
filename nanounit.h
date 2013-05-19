@@ -25,6 +25,8 @@ enum test_mode
     TEST_ASSERT,
 };
 
+bool _nanounit_catched;
+
 template<class A> void test_equal_impl(A actual, A expected, int mode, const char* func, const char* filename, const int line)
 {
     std::stringstream ss;
@@ -63,8 +65,8 @@ template<class A> void test_equal_impl(A actual, A expected, int mode, const cha
 #define test_not_equal(type, actual, expected) test_equal_impl<type>(actual, expected, TEST_NON_EQUAL, __PRETTY_FUNCTION__, __FILE__, __LINE__);
 #define test_assert(expr) test_equal_impl<bool>(expr, true, TEST_ASSERT, __PRETTY_FUNCTION__, __FILE__, __LINE__);
 
-#define test_TRY try {
-#define test_CATCH(type) } catch (type e) { std::cout << "Exception expected: " << e << std::endl; }
+#define test_TRY do { _nanounit_catched = false; } while(false); try {
+#define test_CATCH(type) } catch (type e) { std::cout << "Exception expected: " << e << std::endl; _nanounit_catched = true; } do { if (!_nanounit_catched) { throw std::string("Exception expected, but not happened!");} } while(false);
 
 typedef void (*funcp)(void);
 typedef std::pair<std::string, funcp> func_pair;
@@ -101,6 +103,10 @@ void run_tests()
         {
             std::cout << "Testcase " << i->first << " FAILED!" << std::endl << "  Error message:" << e << std::endl;
         }
+	catch(...)
+	{
+	    std::cout << "Unexpected exception caught during testcase!" << std::endl;
+	}
     }
 }
 
