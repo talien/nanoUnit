@@ -7,7 +7,7 @@ namespace
 
 namespace nanounit
 {
-    void reg_func( funcp func, std::string a)
+    void reg_func( funcp func, const std::string& a)
     {
         funcs.push_back( func_pair(a, func) );
     }
@@ -21,13 +21,20 @@ namespace nanounit
             {
                 i->second();
             }
-            catch(std::string e)
+            catch(const TestFailed& e)
             {
-                std::cout << "Test case " << i->first << " FAILED!" << std::endl << "  Error message:" << e << std::endl;
+                std::cout << "Test case " << i->first << " FAILED!" << std::endl
+                          << "  " << e.what() << std::endl;
+            }
+            catch(const std::exception& e)
+            {
+                std::cout << "Unexpected exception caught in test case " << i->first
+                          << "! Exception:" << e.what() << std::endl;
             }
             catch(...)
             {
-                std::cout << "Unexpected exception caught during testcase!" << std::endl;
+                std::cout << "Unexpected exception caught in test case " << i->first
+                          << "!" << std::endl;
             }
         }
     }

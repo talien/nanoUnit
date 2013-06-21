@@ -16,22 +16,22 @@
 
 #include "nanounit.h"
 
-func_start(test1, "Example1");
+test_begin(test1, "Example1");
 	int a = 1;
 	int b = 1;
 	int c = 2;
 	test_equal(int, a, b);
 	test_not_equal(int, a, c);
 	test_equal(int, a, c);
-func_end
+test_end()
 
-func_start(test2, "Example2");
+test_begin(test2, "Example2");
 	test_assert(1 == 1);
 	test_assert(1 == 2);
-func_end
+test_end()
 
-func_start(test3, "Example3");
-	test_TRY;
+test_begin(test3, "Example3");
+	test_try;
 		throw std::string("Test exception");
-	test_CATCH(std::string);
-func_end
+	test_catch(std::string);
+test_end()

@@ -1,7 +1,11 @@
 
 #include "nanounit.h"
 
-func_start(test23, "Example23");
+test_begin(numbers, "Numbers")
     test_assert(1 == 1);
     test_assert(1 == 2);
-func_end
+test_end();
+
+test_begin(throwTest1, "Throw wrong exception")
+
+test_end();
