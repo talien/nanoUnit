@@ -22,7 +22,7 @@ enum test_mode
 {
     TEST_EQUAL,
     TEST_NON_EQUAL,
-    TEST_ASSERT,
+    TEST_ASSERT
 };
 
 bool _nanounit_catched;
