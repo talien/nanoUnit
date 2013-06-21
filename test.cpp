@@ -23,15 +23,15 @@ test_begin(test1, "Example1");
 	test_equal(int, a, b);
 	test_not_equal(int, a, c);
 	test_equal(int, a, c);
-test_end()
+test_end
 
 test_begin(test2, "Example2");
 	test_assert(1 == 1);
 	test_assert(1 == 2);
-test_end()
+test_end
 
 test_begin(test3, "Example3");
-	test_try;
+	test_try();
 		throw std::string("Test exception");
 	test_catch(std::string);
-test_end()
+test_end

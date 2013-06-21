@@ -16,25 +16,25 @@ namespace nanounit
     {
         for (std::vector<func_pair>::iterator i = funcs.begin(); i != funcs.end(); i++)
         {
-            std::cout << "Running test case " << i->first << std::endl;
+            std::cout << "Running test case '" << i->first << "'\n";
             try
             {
                 i->second();
             }
             catch(const TestFailed& e)
             {
-                std::cout << "Test case " << i->first << " FAILED!" << std::endl
+                std::cout << "Test case '" << i->first << "' FAILED!" << std::endl
                           << "  " << e.what() << std::endl;
             }
             catch(const std::exception& e)
             {
-                std::cout << "Unexpected exception caught in test case " << i->first
-                          << "! Exception:" << e.what() << std::endl;
+                std::cout << "Unexpected exception caught in test case '" << i->first
+                          << "'! Exception: " << e.what() << std::endl;
             }
             catch(...)
             {
-                std::cout << "Unexpected exception caught in test case " << i->first
-                          << "!" << std::endl;
+                std::cout << "Unexpected exception caught in test case '" << i->first
+                          << "'!" << std::endl;
             }
         }
     }

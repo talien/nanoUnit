@@ -89,8 +89,8 @@ namespace nanounit
 #define test_not_equal(type, actual, expected) nanounit::test_equal_impl<type>(actual, expected, nanounit::TEST_NON_EQUAL, __PRETTY_FUNCTION__, __FILE__, __LINE__);
 #define test_assert(expr) nanounit::test_equal_impl<bool>(expr, true, nanounit::TEST_ASSERT, __PRETTY_FUNCTION__, __FILE__, __LINE__);
 
-#define test_try do { bool _nanounit_catched = false; try {
-#define test_catch(type) } catch (const type &e) { std::cout << "Exception expected: " << e << std::endl; _nanounit_catched = true; } if (!_nanounit_catched) { throw std::string("Exception expected, but not happened!");} } while(false);
+#define test_try(xxx) do { bool _nanounit_catched = false; try {
+#define test_catch(type) } catch (const type &e) { _nanounit_catched = true; } if (!_nanounit_catched) { throw std::string("Exception expected, but not happened!");} } while(false)
 
     typedef void (*funcp)(void);
     typedef std::pair<std::string, funcp> func_pair;
@@ -107,7 +107,7 @@ namespace nanounit
     };
 
 #define test_begin(name, desc) void name(); nanounit::test test_##name(name, desc);  void name() {
-#define test_end(xxx) }
+#define test_end }
 }
 
 #endif
