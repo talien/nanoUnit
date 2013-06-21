@@ -1,4 +1,6 @@
-/* Author: Viktor Tusa, 2012 */
+/*  Author: Viktor Tusa, 2012
+            Kim <root@aggressive-solutions.de>, 2013
+*/
 /*  This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -12,106 +14,103 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
-#include <string>
+#ifndef NANO_UNIT_H_
+#define NANO_UNIT_H_
+
+#include <exception>
 #include <iostream>
 #include <sstream>
-#include <vector>
+#include <string>
 #include <utility>
+#include <vector>
 
-enum test_mode
+namespace nanounit
 {
-    TEST_EQUAL,
-    TEST_NON_EQUAL,
-    TEST_ASSERT,
-};
-
-bool _nanounit_catched;
-
-template<class A> void test_equal_impl(A actual, A expected, int mode, const char* func, const char* filename, const int line)
-{
-    std::stringstream ss;
-    switch (mode)
+    enum test_mode
     {
-        case TEST_EQUAL:
-            if (expected != actual)
-            {
-                ss << "Equality failed, actual='" << actual << "', expected='" << expected << "' in " << func << " " << filename << ":" << line;
-                throw ss.str();
-            }
-            std::cout << "Equality passed, actual='" << actual << "', expected='" << expected << "' in " << func << " " << filename << ":" << line << std::endl;
-            break;
-        case TEST_NON_EQUAL:
-            if (expected == actual)
-            {
-                ss << "Inequality failed, actual='" << actual << "', not expected='" << expected << "' in " << func << " " << filename << ":" << line;
-                throw ss.str();
-            }
-            std::cout << "Inequality passed, actual='" << actual << "', not expected='" << expected << "' in " << func << " " << filename << ":" << line << std::endl;
-            break;
-        case TEST_ASSERT:
-            if (expected != actual)
-            {
-                ss << "Assertion failed, in " << func << " " << filename << ":" << line;
-                throw ss.str();
-            }
-            std::cout << "Assertion passed, in " << func << " " << filename << ":" << line << std::endl;
-            break;
+        TEST_EQUAL,
+        TEST_NON_EQUAL,
+        TEST_ASSERT
+    };
+
+    class TestFailed : public std::exception
+    {
+    public:
+        TestFailed(const std::string& msg)
+        : m_message(msg)
+        {}
+
+        virtual ~TestFailed() throw() {}
+
+        virtual const char* what() const throw()
+        {
+            return m_message.c_str();
+        }
+
+    private:
+        TestFailed();
+        std::string m_message;
+    };
+
+    template<class A>
+    void test_equal_impl(A actual, A expected, int mode, const char* func, const char* filename, const int line)
+    {
+        std::ostringstream ss;
+        switch (mode)
+        {
+            case nanounit::TEST_EQUAL:
+                if (expected != actual)
+                {
+                    ss << filename << ":" << line << ": actual='" << actual << "', expected='" << expected << "' in " << func;
+                    throw nanounit::TestFailed( ss.str() );
+                }
+                std::cout << filename << ":" << line << ": OK" << std::endl;
+                break;
+            case nanounit::TEST_NON_EQUAL:
+                if (expected == actual)
+                {
+                    ss << filename << ":" << line << ": actual='" << actual << "', not expected='" << expected << "' in " << func;
+                    throw nanounit::TestFailed( ss.str() );
+                }
+                std::cout << filename << ":" << line << ": OK" << std::endl;
+                break;
+            case nanounit::TEST_ASSERT:
+                if (expected != actual)
+                {
+                    ss << filename << ":" << line << ": assertion in " << func;
+                    throw nanounit::TestFailed( ss.str() );
+                }
+                std::cout << filename << ":" << line << ": OK" << std::endl;
+                break;
+        }
     }
 
-}
+#define test_equal(type, actual, expected) nanounit::test_equal_impl<type>(actual, expected, nanounit::TEST_EQUAL, __PRETTY_FUNCTION__, __FILE__, __LINE__);
+#define test_not_equal(type, actual, expected) nanounit::test_equal_impl<type>(actual, expected, nanounit::TEST_NON_EQUAL, __PRETTY_FUNCTION__, __FILE__, __LINE__);
+#define test_assert(expr) nanounit::test_equal_impl<bool>(expr, true, nanounit::TEST_ASSERT, __PRETTY_FUNCTION__, __FILE__, __LINE__);
 
+#define test_try(xxx) do { bool _nanounit_catched = false; try {
+#define test_catch(type) } catch (const type &e) { _nanounit_catched = true; } if (!_nanounit_catched) { throw std::string("Exception expected, but not happened!");} } while(false)
 
-#define test_equal(type, actual, expected) test_equal_impl<type>(actual, expected, TEST_EQUAL, __PRETTY_FUNCTION__, __FILE__, __LINE__);
-#define test_not_equal(type, actual, expected) test_equal_impl<type>(actual, expected, TEST_NON_EQUAL, __PRETTY_FUNCTION__, __FILE__, __LINE__);
-#define test_assert(expr) test_equal_impl<bool>(expr, true, TEST_ASSERT, __PRETTY_FUNCTION__, __FILE__, __LINE__);
+    typedef void (*funcp)(void);
+    typedef std::pair<std::string, funcp> func_pair;
 
-#define test_TRY do { _nanounit_catched = false; } while(false); try {
-#define test_CATCH(type) } catch (type e) { std::cout << "Exception expected: " << e << std::endl; _nanounit_catched = true; } do { if (!_nanounit_catched) { throw std::string("Exception expected, but not happened!");} } while(false);
+    void reg_func( funcp func, const std::string& a);
 
-typedef void (*funcp)(void);
-typedef std::pair<std::string, funcp> func_pair;
-std::vector< func_pair > funcs;
-
-void reg_func( funcp func, std::string a)
-{
-    funcs.push_back(func_pair(a,func));
-}
-
-
-class test
-{
+    class test
+    {
     public:
-        test(funcp f, std::string s)
+        test(funcp f, const std::string& s)
         {
             reg_func(f, s);
         }
-};
+    };
 
-#define func_start(name, desc) void name(); test test_##name(name, desc);  void name() {
-#define func_end }
-
-void run_tests()
-{
-    for (std::vector<func_pair>::iterator i = funcs.begin(); i != funcs.end(); i++)
-    {
-        std::cout << "Running testcase " << i->first << std::endl;
-        try
-        {
-            i->second();
-        }
-        catch(std::string e)
-        {
-            std::cout << "Testcase " << i->first << " FAILED!" << std::endl << "  Error message:" << e << std::endl;
-        }
-	catch(...)
-	{
-	    std::cout << "Unexpected exception caught during testcase!" << std::endl;
-	}
-    }
+#define test_begin(name, desc) void name(); nanounit::test test_##name(name, desc);  void name() {
+#define test_end }
 }
 
+#endif
 
-int main()
-{
-    run_tests();
-}
+
+
